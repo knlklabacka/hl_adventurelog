@@ -58,10 +58,9 @@ services:
       - PGHOST=trips-db
       - PGDATABASE=adventurelog
       - PGUSER=adventure
-      - PGPASSWORD=postklabackasql
-      - SECRET_KEY=49c8216146fdf86230fc2cbd4c2d95cd9a95f695d2031f44b5041d00ea00fce2
-      - DJANGO_ADMIN_USERNAME=admin
-      - DJANGO_ADMIN_PASSWORD=JNqHRB8wo42
+      ##########################################################################
+      # add from notes
+      ##########################################################################
       - DJANGO_ADMIN_EMAIL=knlklabacka@gmail.com
       - PUBLIC_URL=https://trips.knlklabacka.com # Match the outward port, used for the creation of image urls
       #- CSRF_TRUSTED_ORIGINS=http://trips.knlklabacka.com,http://tripslog.knlklabacka.com,https://trips.knlklabacka.com,https://tripslog.knlklabacka.com,http://trips-web,https://trips-web,http://trips-server,https://trips-server # Comma separated list of trusted origins for CSRF
