@@ -1,0 +1,125 @@
+services:
+  trips-web:
+    #build: ./frontend/
+    image: ghcr.io/seanmorley15/adventurelog-frontend:latest
+    container_name: adventurelog-frontend
+    hostname: adventurelog-frontend
+    restart: unless-stopped
+    environment:
+      - PUBLIC_SERVER_URL=http://trips-server:8000 # Should be the service name of the backend with port 8000, even if you change the port in the backend service
+      #- PUBLIC_SERVER_URL=adventurelog-backend:8000
+      - ORIGIN=https://trips.knlklabacka.com
+      - BODY_SIZE_LIMIT=Infinity
+      - DISABLE_REGISTRATION=True
+      - DISABLE_REGISTRATION_MESSAGE='Registration is disabled for this instance of AdventureLog.'
+    #ports:
+    #  - "8015:3000"
+    depends_on:
+      - trips-server
+    networks:
+      proxy:
+        ipv4_address: 172.18.0.85
+    dns:
+      - 172.18.0.46
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.trips.entrypoints=websecure"
+      - "traefik.http.routers.trips.rule=Host(`trips.$MY_DOMAIN`)"
+      #- "traefik.http.routers.trips.rule=Host(`trips.knlklabacka.com`) && !(PathPrefix(`/media`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/accounts`))" # Replace with your domain
+      - "traefik.http.routers.trips.tls=true"
+      - "traefik.http.services.trips.loadbalancer.server.port=3000"
+      - "traefik.http.routers.trips.tls.certresolver=lets-encr"
+
+  trips-db:
+    image: postgis/postgis:15-3.3
+    container_name: adventurelog-db
+    hostname: adventurelog-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: adventurelog
+      POSTGRES_USER: adventure
+      POSTGRES_PASSWORD: postklabackasql
+    volumes:
+      - trips_postgres_data:/var/lib/postgresql/data/
+      #- /home/mdk177/dockercompose/nfs-server/trips/db_data:/var/lib/postgres/data/
+    networks:
+      proxy:
+        ipv4_address: 172.18.0.86
+    dns:
+      - 172.18.0.46
+
+  trips-server:
+    #build: ./backend/
+    image: ghcr.io/seanmorley15/adventurelog-backend:latest
+    container_name: adventurelog-backend
+    hostname: adventurelog-backend
+    restart: unless-stopped
+    environment:
+      - PGHOST=trips-db
+      - PGDATABASE=adventurelog
+      - PGUSER=adventure
+      - PGPASSWORD=postklabackasql
+      - SECRET_KEY=49c8216146fdf86230fc2cbd4c2d95cd9a95f695d2031f44b5041d00ea00fce2
+      - DJANGO_ADMIN_USERNAME=admin
+      - DJANGO_ADMIN_PASSWORD=JNqHRB8wo42
+      - DJANGO_ADMIN_EMAIL=knlklabacka@gmail.com
+      - PUBLIC_URL=https://trips.knlklabacka.com # Match the outward port, used for the creation of image urls
+      #- CSRF_TRUSTED_ORIGINS=http://trips.knlklabacka.com,http://tripslog.knlklabacka.com,https://trips.knlklabacka.com,https://tripslog.knlklabacka.com,http://trips-web,https://trips-web,http://trips-server,https://trips-server # Comma separated list of trusted origins for CSRF
+      - CSRF_TRUSTED_ORIGINS=https://trips.knlklabacka.com
+      - DEBUG=True
+      - FRONTEND_URL=https://trips.knlklabacka.com # Used for email generation. This should be the url of the frontend
+      - DISABLE_REGISTRATION=false
+      - EMAIL_BACKEND=email
+      - EMAIL_HOST=smtp.gmail.com
+      - EMAIL_USE_TLS=False
+      - EMAIL_PORT=465
+      - EMAIL_USE_SSL=True
+      - EMAIL_HOST_USER=knlklabacka@gmail.com
+      - EMAIL_HOST_PASSWORD=asfjcxxjozxdnyov
+      - DEFAULT_FROM_EMAIL=knlklabacka@gmail.com
+   #ports:
+    #  - "8016:80"
+    depends_on:
+      - trips-db
+    volumes:
+      #- /home/mdk177/dockercompose/nfs-server/trips/media:/code/media/
+      - adventurelog_media:/code/media
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tripslog.entrypoints=websecure"
+      - "traefik.http.routers.tripslog.rule=Host(`trips.knlklabacka.com`) && (PathPrefix(`/media`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/accounts`))"
+      - "traefik.http.routers.tripslog.tls=true"
+      - "traefik.http.services.tripslog.loadbalancer.server.port=8000"
+      - "traefik.http.routers.tripslog.tls.certresolver=lets-encr"
+    networks:
+      proxy:
+        ipv4_address: 172.18.0.87
+    dns:
+      - 172.18.0.46
+
+  beszel-agent:
+    image: "henrygd/beszel-agent"
+    container_name: "trips-beszel-agent"
+    restart: always
+    networks:
+      proxy:
+        ipv4_address: 172.18.0.89
+    dns:
+      - 172.18.0.46
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # monitor other disks / partitions by mounting a folder in /extra-filesystems
+      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
+    environment:
+      LISTEN: 45874
+      KEY: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE51r7MBKh0o60vj8HDXEaQqFbM5IsGDxdpqXFc8lhPW"
+
+
+volumes:
+  trips_postgres_data:
+  adventurelog_media:
+
+networks:
+  proxy:
+    name: proxied
+    external: true
