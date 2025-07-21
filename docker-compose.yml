@@ -75,7 +75,6 @@ services:
       - EMAIL_PORT=465
       - EMAIL_USE_SSL=True
       - EMAIL_HOST_USER=knlklabacka@gmail.com
-      - EMAIL_HOST_PASSWORD=asfjcxxjozxdnyov
       - DEFAULT_FROM_EMAIL=knlklabacka@gmail.com
    #ports:
     #  - "8016:80"
