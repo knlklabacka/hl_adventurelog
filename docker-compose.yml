@@ -8,7 +8,7 @@ services:
     environment:
       - PUBLIC_SERVER_URL=http://trips-server:8000 # Should be the service name of the backend with port 8000, even if you change the port in the backend service
       #- PUBLIC_SERVER_URL=adventurelog-backend:8000
-      - ORIGIN=https://trips.knlklabacka.com
+      - ORIGIN=https://trips.$HOST_NAME
       - BODY_SIZE_LIMIT=Infinity
       - DISABLE_REGISTRATION=True
       - DISABLE_REGISTRATION_MESSAGE='Registration is disabled.'
@@ -42,7 +42,7 @@ services:
     environment:
       POSTGRES_DB: adventurelog
       POSTGRES_USER: adventure
-      POSTGRES_PASSWORD: postklabackasql
+      POSTGRES_PASSWORD: $DB_PASSWORD
     volumes:
       # - trips_postgres_data:/var/lib/postgresql/data/
       - /home/mdk177/documents/nfs-server/trips/db_data:/var/lib/postgres/data/
@@ -62,32 +62,29 @@ services:
     hostname: adventurelog-backend
     restart: unless-stopped
     environment:
-      - PGHOST=trips-db
-      - PGDATABASE=adventurelog
-      - PGUSER=adventure
-      - PGHOST=trips-db
-      - PGDATABASE=adventurelog
-      - PGUSER=adventure
-      - PGPASSWORD=postklabackasql
-      - SECRET_KEY=49c8216146fdf86230fc2cbd4c2d95cd9a95f695d2031f44b5041d00ea00fce2
-      - DJANGO_ADMIN_USERNAME=admin
-      - DJANGO_ADMIN_PASSWORD=JNqHRB8wo42
-      - EMAIL_HOST_PASSWORD=asfjcxxjozxdnyov
-      - DEFAULT_FROM_EMAIL=knlklabacka@gmail.com
-      - DJANGO_ADMIN_EMAIL=knlklabacka@gmail.com
-      - PUBLIC_URL=https://trips.knlklabacka.com # Match the outward port, used for the creation of image urls
+      - PGHOST=$DB_HOST
+      - PGDATABASE=$DB_DATABASE
+      - PGUSER=$DB_USER
+      - PGPASSWORD=$DB_PASSWORD
+      - SECRET_KEY=$SECRET_KEY
+      - DJANGO_ADMIN_USERNAME=$DJ_ADMIN_USERNAME
+      - DJANGO_ADMIN_PASSWORD=$DJ_ADMIN_PASSWORD
+      - EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD
+      - DEFAULT_FROM_EMAIL=$MY_EMAIL
+      - DJANGO_ADMIN_EMAIL=$MY_EMAIL
+      - PUBLIC_URL=https://trips.${HOST_NAME} # Match the outward port, used for the creation of image urls
       #- CSRF_TRUSTED_ORIGINS=http://trips.knlklabacka.com,http://tripslog.knlklabacka.com,https://trips.knlklabacka.com,https://tripslog.knlklabacka.com,http://trips-web,https://trips-web,http://trips-server,https://trips-server # Comma separated list of trusted origins for CSRF
-      - CSRF_TRUSTED_ORIGINS=https://trips.knlklabacka.com
+      - CSRF_TRUSTED_ORIGINS=https://trips.${HOST_NAME}
       - DEBUG=True
-      - FRONTEND_URL=https://trips.knlklabacka.com # Used for email generation. This should be the url of the frontend
+      - FRONTEND_URL=https://trips.${HOST_NAME} # Used for email generation. This should be the url of the frontend
       - DISABLE_REGISTRATION=false
       - EMAIL_BACKEND=email
       - EMAIL_HOST=smtp.gmail.com
       - EMAIL_USE_TLS=False
       - EMAIL_PORT=465
       - EMAIL_USE_SSL=True
-      - EMAIL_HOST_USER=knlklabacka@gmail.com
-      - DEFAULT_FROM_EMAIL=knlklabacka@gmail.com
+      - EMAIL_HOST_USER=$MY_EMAIL
+      - DEFAULT_FROM_EMAIL=$MY_EMAIL
    #ports:
     #  - "8016:80"
     depends_on:
@@ -98,7 +95,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tripslog.entrypoints=https"
-      - "traefik.http.routers.tripslog.rule=Host(`trips.knlklabacka.com`) && (PathPrefix(`/media`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/accounts`))"
+      - "traefik.http.routers.tripslog.rule=Host(`trips.$HOST_NAME`) && (PathPrefix(`/media`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/accounts`))"
       - "traefik.http.routers.tripslog.tls=true"
       - "traefik.http.services.tripslog.loadbalancer.server.port=8000"
       - "traefik.http.routers.tripslog.tls.certresolver=myresolver"
