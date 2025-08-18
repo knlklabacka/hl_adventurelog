@@ -19,11 +19,8 @@ services:
     networks:
       proxy:
         ipv4_address: 172.18.0.85
-    dns:
-      # pihole container
-      # - 172.18.0.46
-      - 192.168.1.61
-      - 192.168.1.62
+    #dns:
+    #  - 192.168.1.70
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.trips.entrypoints=https"
@@ -49,11 +46,8 @@ services:
     networks:
       proxy:
         ipv4_address: 172.18.0.86
-    dns:
-      # pihole container
-      # - 172.18.0.46
-      - 192.168.1.61
-      - 192.168.1.62
+    #dns:
+    #  - 192.168.1.70
 
   trips-server:
     #build: ./backend/
@@ -102,11 +96,8 @@ services:
     networks:
       proxy:
         ipv4_address: 172.18.0.87
-    dns:
-      # pihole container
-      #- 172.18.0.46
-      - 192.168.1.61
-      - 192.168.1.62
+    #dns:
+      #- 192.168.1.70
 
   #beszel-agent:
   #  image: "henrygd/beszel-agent"
