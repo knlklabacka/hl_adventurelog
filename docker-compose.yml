@@ -1,13 +1,11 @@
 services:
   trips-web:
-    #build: ./frontend/
     image: ghcr.io/seanmorley15/adventurelog-frontend:latest
     container_name: adventurelog-frontend
     hostname: adventurelog-frontend
     restart: unless-stopped
     environment:
       - PUBLIC_SERVER_URL=http://trips-server:8000 # Should be the service name of the backend with port 8000, even if you change the port in the backend service
-      #- PUBLIC_SERVER_URL=adventurelog-backend:8000
       - ORIGIN=https://trips.$HOST_NAME
       - BODY_SIZE_LIMIT=Infinity
       - DISABLE_REGISTRATION=True
@@ -19,8 +17,6 @@ services:
     networks:
       proxy:
         ipv4_address: 172.18.0.85
-    #dns:
-    #  - 192.168.1.70
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.trips.entrypoints=https"
@@ -29,7 +25,7 @@ services:
       - "traefik.http.routers.trips.tls=true"
       - "traefik.http.services.trips.loadbalancer.server.port=3000"
       - "traefik.http.routers.trips.tls.certresolver=myresolver"
-      #- "traefik.http.routers.trips.middlewares=tinyauth"
+      - "traefik.http.routers.trips.middlewares=middlewares-authentik@file"
 
   trips-db:
     image: postgis/postgis:15-3.3
@@ -46,11 +42,8 @@ services:
     networks:
       proxy:
         ipv4_address: 172.18.0.86
-    #dns:
-    #  - 192.168.1.70
 
   trips-server:
-    #build: ./backend/
     image: ghcr.io/seanmorley15/adventurelog-backend:latest
     container_name: adventurelog-backend
     hostname: adventurelog-backend
@@ -96,8 +89,6 @@ services:
     networks:
       proxy:
         ipv4_address: 172.18.0.87
-    #dns:
-      #- 192.168.1.70
 
   #beszel-agent:
   #  image: "henrygd/beszel-agent"
